@@ -1,0 +1,33 @@
+{% extends 'index.html' %}
+
+{% block right-content-container %}
+          <h3 class="page-header">已报名学员</h3>
+
+<table class="table table-striped table-hover">
+
+                <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>姓名</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for stu_obj in stu_lists %}
+                    <tr>
+                        <td>{{ stu_obj.id }}</td>
+                        <td><a href="/kingadmin/crm/customerinfo/{{ stu_obj.customer_id }}/change">{{ stu_obj.customer }}</a></td>
+
+{#                        <td>{{ stu_obj.classlist }}</td>#}
+
+                    </tr>
+                {% endfor %}
+                </tbody>
+
+
+            </table>
+
+
+
+
+
+        {% endblock %}

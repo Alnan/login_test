@@ -1,0 +1,73 @@
+{% extends 'index.html' %}
+
+
+{% block right-content-container %}
+<h3>学员报名|缴费记录</h3>
+    <hr>
+
+
+
+<form class="form-horizontal" method="post" onsubmit="BeforeFormSubmit();">{% csrf_token %}
+
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">客户：</label>
+        <div class="col-sm-10">
+            <input name="enrollment" disabled class="form-control" value="{{ enrollment_obj.customer }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">报名班级：</label>
+        <div class="col-sm-10">
+            <input name="class_name" disabled class="form-control" value="{{ enrollment_obj.class_grade }}">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label class="col-sm-2 control-label">课程顾问：</label>
+        <div class="col-sm-10">
+            <input name="consultant" disabled class="form-control" value="{{ enrollment_obj.consultant }}">
+        </div>
+    </div>
+
+
+    {% for field in payment_form %}
+        <div class="form-group">
+            <label class="col-sm-2 control-label">{{ field.label }}：</label>
+            <div class="col-sm-10">
+                {{ field }}
+            </div>
+        </div>
+    {% endfor %}
+
+{#        <span class="col-lg-push-6" style="color: red">{{ error_msg }} </span>#}
+        <span style="color: red;margin-left: 180px">{{ error_msg }} </span>
+
+
+
+
+
+    <hr>
+    <input type="submit" class="btn btn-success pull-right"  value="提交" >
+
+
+</form>
+
+
+
+
+<script>
+    function BeforeFormSubmit(ele) {
+        $(":disabled").removeAttr("disabled");
+
+    }
+
+    
+
+    
+</script>
+{% endblock %}
+
+
+

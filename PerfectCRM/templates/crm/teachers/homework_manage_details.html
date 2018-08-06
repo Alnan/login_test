@@ -1,0 +1,79 @@
+{% extends 'index.html' %}
+
+{% block right-content-container %}
+
+    <form class="form" method="post">
+        {% csrf_token %}
+        <div class="panel panel-default">
+            <!-- Default panel contents -->
+            <div class="panel-heading"><h4>{{ study_record_obj.course_record }} | {{ study_record_obj.student }}
+                学习记录</h4></div>
+            <div class="panel-body">
+                <div class="form-horizontal">
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label col-sm-offset-0">作业标题:</label>
+                        <div class="col-sm-9">
+                            <input name="homework_title" disabled class="form-control"
+                                   value="{{ study_record_obj.course_record.title }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label col-sm-offset-0">作业详情:</label>
+                        <div class="col-sm-9">
+                            <pre class="form-control">{{ study_record_obj.course_record.homework }}</pre>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label col-sm-offset-0">本节成绩:</label>
+                        <div class="col-sm-9">
+                            <input name="score" class="form-control"
+                                   value="{{ study_record_obj.score }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-lg-2 control-label col-sm-offset-0">老师评语:</label>
+                        <div class="col-sm-9">
+                            {#                        <input type="text" name="note" class="form-control" value="{{ study_record_obj.note }}">#}
+                            <textarea class="form-control" name="note">{{ study_record_obj.note }}</textarea>
+                        </div>
+                    </div>
+
+                </div>
+                <hr>
+
+                <div class="row">
+                    {% if file_lists %}
+                        <p style="margin-left: 15px">{{ study_record_obj.student }}的作业：</p>
+                        <ul id="uploaded_homework">
+                        {% for file in file_lists %}
+                            <li>{{ file.0 }} | {{ file.1 }}/B | {{ file.2 }} <a href="#" style="margin-left: 12px">下载</a></li>
+                        {% endfor %}
+                    {% endif %}
+                    </ul>
+                </div>
+            <input type="submit" class="btn btn-success col-lg-offset-11" value="提交">
+            </div>
+        </div>
+
+    </form>
+
+
+
+    <script>
+       /* function BeforeFormSubmit(ele) {
+
+            if ($("#uploaded_files").children().length == 0) {
+                alert("请上传您的作业!");
+                return false
+
+            }
+        }*/
+
+    </script>
+
+
+{% endblock %}
+

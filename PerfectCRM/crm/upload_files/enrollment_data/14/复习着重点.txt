@@ -1,0 +1,13 @@
+python
+	Django torando
+
+	mysql、sqline、redis 数据库操作
+
+	简单h5 css js ajax jQuery代码
+
+	git、GitHub使用
+
+	正则表达式、Xpath、css选择器
+
+	linux shell脚本操作 vim
+	

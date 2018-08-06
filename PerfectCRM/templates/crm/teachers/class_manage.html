@@ -1,0 +1,32 @@
+{% extends 'index.html' %}
+
+{% block right-content-container %}
+    <h3 class="page-header">班级管理</h3>
+
+
+
+        <table class="table table-striped table-hover">
+            <thead>
+            <tr>
+                <th>{{ request.user }} 老师，您管理的班级：</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for cls_obj in cls_objs %}
+            <tr>
+
+                <th><a href="/kingadmin/crm/classlist/{{ cls_obj.id }}/change/">{{ cls_obj }}</a></th>
+                <th><a href="{% url 'course_record' cls_obj.id %}">上课记录</a></th>
+                <th>{{ cls_obj.branch }}</th>
+{#                <th><a href="{% url 'homework_manage' cls_obj.id %}">作业管理</a></th>#}
+
+            </tr>
+            {% endfor %}
+            </tbody>
+
+        </table>
+
+
+
+{% endblock %}

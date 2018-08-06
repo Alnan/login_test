@@ -1,0 +1,15 @@
+<header>
+ <link href="/static/plugins/dropzone/dropzone.css" rel="stylesheet">
+</header>
+<form id="filedropzone" method="post" action="{{ request.path }}" class="dropzone dz-clickable" >{% csrf_token %}
+            <div class="dz-default dz-message">
+                <div class="dz-icon icon-wrap icon-circle icon-wrap-md">
+                    <i class="fa fa-cloud-upload fa-3x"></i>
+                </div>
+                <div>
+                    <p class="dz-text">把证件信息拖放到这里</p>
+                    <p class="text-muted">最多可上传2张照片</p>
+                </div>
+            </div>
+
+        </form>

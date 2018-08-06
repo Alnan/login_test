@@ -1,0 +1,7 @@
+{% if enrollment_obj.contract_approved %}
+    <h3>报名合同已通过审核，欢迎您加入 xxx IT教育！</h3>
+{% elif enrollment_obj.contract_agreed %}
+    <h3>报名合同正在审核中....</h3>
+{% else %}
+    <h3>您已成功提交报名信息,请等待审核通过.....</h3>
+{% endif %}

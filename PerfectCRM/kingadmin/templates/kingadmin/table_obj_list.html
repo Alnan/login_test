@@ -1,0 +1,157 @@
+{% extends "kingadmin/index.html" %}
+{% load kingadmin_tags %}
+
+{% block right-content-container %}
+    <ol class="breadcrumb">
+      <li><a href="/kingadmin/">Home</a></li>
+      <li><a href="/kingadmin/{{ app_name }}">{{ app_name }}</a></li>
+      <li class="active">{% get_model_verbose_name admin_class %}</li>
+    </ol>
+
+    <h1 class="page-header">{{ model_name }}</h1>
+
+<div>
+
+    {# 搜索框布局#}
+        <form style="margin-bottom: 5px">
+            {% if  admin_class.search_fields %}
+                <input type="search" placeholder="{% for s in admin_class.search_fields %}{{ s }},{% endfor %}" name="_q" value="{{ admin_class.search_key }}">
+                <input type="submit" value="Search" style="margin-left: 10px">
+
+                {% for k,v in admin_class.filter_condtions.items %}
+                    <input type="hidden" name="{{ k }}" value="{{ v }}">
+                {% endfor %}
+            {% endif %}
+        </form>
+
+    <div class="row">
+        {#过滤选择#}
+        {% if  admin_class.list_filter %}
+            <form style="margin:10px">
+
+                {% for filter_column in admin_class.list_filter %}
+                    <span style="margin-right: 6px; margin-left: 30px;color: #337ab7; font-weight:bold">{{ filter_column }}:</span>
+                    {% build_filter_ele filter_column admin_class %}
+                {% endfor %}
+                <input type="hidden" name="_o" value="{% get_current_sorted_column_index sorted_column %}">
+                <input class="btn btn-success" type="submit" value="过滤" style="margin-left: 18px">
+            </form>
+        {% endif %}
+
+    </div>
+
+        {# kingadmin action 操作      #}
+    <form onsubmit="return ActionCheck(this)" method="post">{% csrf_token %}
+            <div class="row" style="margin-top:5px">
+                <div class="col-lg-3">
+                    <select class="form-control" name="action" >
+                            <option value="">---------</option>
+                         {% for action in admin_class.actions %}
+                            <option value="{{ action }}">{{ action }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <input type="submit" value="GO" style="margin-top: 4px">
+
+                </div>
+            </div>
+
+        </form>
+    {#显示表中各数据#}
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            {% if admin_class.list_display %}
+                <th><input type="checkbox" onclick="SelectAllObjs(this)"></th>
+                {% for column in admin_class.list_display %}
+                    <th><a href="?_o={% get_sorted_column column sorted_column forloop.counter0 %}{% render_filtered_args admin_class%}">
+                                {{ column }}
+                                {% render_sorted_arrow column  sorted_column %}
+                            </a></th>
+
+                {% endfor %}
+            {% else %}
+                <th><input type="checkbox" onclick="SelectAllObjs(this)"></th>
+                <th>{% get_model_name admin_class %}</th>
+            {% endif %}
+
+        </tr>
+        </thead>
+        <tbody>
+            {% for obj in querysets %}
+                <tr>
+                <td><input row-select="true" type="checkbox" value="{{ obj.id }}"></td>
+                    {% build_table_row obj admin_class %}
+                </tr>
+            {% endfor %}
+        </tbody>
+
+
+    </table>
+
+    <div class="pagination">
+
+        {#            分页#}
+        {% render_paginator querysets admin_class sorted_column %}
+
+    </div>
+
+
+
+
+</div>
+
+
+
+
+<script>
+
+function SelectAllObjs(ele) {
+
+    if ($(ele).prop('checked')){
+        $('input[row-select]').prop('checked',true)
+
+    }else {
+        $('input[row-select]').prop('checked',false)
+    }
+
+
+}
+
+
+function ActionCheck(ele){
+    var selected_action = $("select[name='action']").val();
+    var selected_objs = $("input[row-select]").filter(":checked");//找到已选数据（一条或多条）
+    {#console.log($("select[name='action']").val())#}
+    if (!selected_action){ //action框未选择方法
+        alert("no action selected!");
+        return false
+    }
+    if (selected_objs.length == 0 ){  //没有选中数据
+        alert("no object selected!");
+        return false
+    }else {
+        //生成一个标签,放到form里
+
+        var selected_ids = [];
+        $.each(selected_objs,function () {  //循环selected_objs数据
+            console.log($(this) );
+            selected_ids.push($(this).val())
+        });
+        console.log(selected_ids);
+        var input_ele = "<input type='hidden' name='selected_ids' value=" + JSON.stringify(selected_ids) + ">"
+
+        $(ele).append(input_ele);
+    }
+    //return false
+
+
+
+}
+</script>
+
+
+
+
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "index.html" %}
+
+{% block right-content-container %}
+
+    <h3 class="page-header">删除{{ course_record_obj }} 所有学习记录</h3>
+
+
+    <h4 class="page-header" style="color: red">是否确定 删除{{ course_record_obj }}课下所有的学习记录？</h4>
+    <h5 style="color: red;margin-left: 38px">温馨提醒：删除完成即无法恢复</h5>
+    <br>
+
+<form method="post">{% csrf_token %}
+
+
+        <input class="btn btn-danger col-lg-offset-1" type="submit" value="确认删除">
+        <a href="/crm/teachers/course_record/{{ course_record_obj.class_grade.id }}/" class="btn btn-info col-lg-offset-0">返回</a>
+
+
+    </form>
+
+
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "index.html" %}
+{% load crm_tags %}
+
+{% block right-content-container %}
+    <div class="container">
+        <h3 class="page-header">{{ course_record_obj }} | 学生学习记录</h3>
+    </div>
+
+
+    <table class="table table-striped table-hover">
+
+        <tr>
+            <th>当前课程节次</th>
+            <th>学员姓名</th>
+            <th>是否签到</th>
+            <th>成绩</th>
+            <th>记录时间</th>
+        </tr>
+        {% for study_record_obj in study_record_objs %}
+            <tr>
+{#                <td>#}
+{#                    <a href="{% url 'course_record_change' course_record_obj.id %}">{{ course_record_obj.class_grade }}</a>#}
+{#                </td>#}
+                <td><a href="{% url 'study_record_change' study_record_obj.id %}"> {{ course_record_obj }}</a></td>
+                <td>{{ study_record_obj.student }}</td>
+                {#   获取choise选择框中的内容值，非数字值     #}
+                {% for field in list_display %}
+                    {% get_obj_field_val study_record_obj field %}
+                {% endfor %}
+                <td>{{ study_record_obj.date }}</td>
+{#                <td><a href="{% url 'bulk_create_StudyRecord' course_record_obj.id %}"><input class="btn-info"#}
+{#                                                                                              type="button"#}
+{#                                                                                              value="查看/创建学员记录"></a>#}
+{#                </td>#}
+            </tr>
+
+
+        {% endfor %}
+
+
+    </table>
+
+
+{% endblock %}

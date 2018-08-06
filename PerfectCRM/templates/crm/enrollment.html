@@ -1,0 +1,227 @@
+{% extends 'index.html' %}
+{% block extra-css %}
+    <link href="/static/plugins/dropzone/dropzone.css" rel="stylesheet">
+
+
+{% endblock %}
+{% block body %}
+    <div class="container">
+        <h3>XX IT教育 | 学员报名</h3>
+
+
+        <div class="panel panel-info">
+            <div class="panel-heading">
+                <h3 class="panel-title">学员在线报名</h3>
+            </div>
+            <div class="panel-body">
+                <form class="form" method="post" onsubmit="return BeforeFormSubmit(this)">{% csrf_token %}
+
+                    {{ customer_form.errors }}
+                    {% for field in customer_form %}
+                        <div class="form-group col-lg-6">
+                            <label class="col-sm-2  control-label">{{ field.label }}：</label>
+                            <div class="col-sm-10">
+                                {{ field }}
+                                <span style="color: red;">{{ field.errors.0 }}</span>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+                    <div class="form-group col-lg-6">
+                        <label class="col-sm-2  control-label">报名班级</label>
+                        <div class="col-sm-10">
+                            {{ enrollment_obj.class_grade }}
+                        </div>
+                    </div>
+                    <div class="form-group col-lg-6">
+                        <label class="col-sm-2  control-label">学费</label>
+                        <div class="col-sm-10">
+                            {{ enrollment_obj.class_grade.course.price }}
+                        </div>
+                    </div>
+
+                    <hr>
+                    <br>
+
+                    <pre style="height: 400px;">{{ enrollment_obj.class_grade.contract_template.content }}</pre>
+
+                    <input type="checkbox" id="con_agreed" name="contract_agreed"><label
+                            for="con_agreed">我已认真阅读并同意</label>
+
+                    <input type="submit" class="btn btn-success pull-right" value="提交">
+
+                </form>
+                <hr>
+
+
+                <p>请上传相关身份证件照（正反面），及一寸证照：</p>
+                <table id="uploaded-list" class="table table-striped">
+            <thead>
+            <tr>
+                <th>文件名</th>
+                <th>大小(kb)</th>
+                <th>上传时间</th>
+                <th>删除</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for file_name,file_info in file_dicts.file.items %}
+                    <!-- file_dicts: {'file': {'2.rar': {'size': 16808, 'ctime': '2018-07-16 13:59:55'}}}-->
+                    <tr>
+                        <td>{{ file_name }}</td>
+                        <td>{{ file_info.size }}</td>
+                        <td>{{ file_info.ctime }}</td>
+                        <td ><i style='color:red;cursor: pointer' class='fa fa-times' aria-hidden='true' onclick="DeleteFileOnServer('{{ file_name }}',this)">X</i></td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+                {#              Dropzone插件，用于上传文件处理#}
+                <form method="post" id="filedropzone" action="{% url 'enrollment_fileupload' enrollment_obj.id %}" class="dropzone dz-clickable" enctype="multipart/form-data">
+{#                <form id="filedropzone" action="{{ request.path }}" class="dropzone dz-clickable" enctype="multipart/form-data">#}
+                    {% csrf_token %}
+                    <div class="fallback">
+                        <input name="file" type="file" multiple/>
+                    </div>
+                </form>
+
+
+            </div>
+            <div class="panel-footer">欢迎光临 xx教育机构</div>
+        </div>
+    </div>
+
+
+
+
+
+    <script>
+        function BeforeFormSubmit(ele) {
+            $(":disabled").removeAttr("disabled");
+
+            if ($("#uploaded-list tbody").children().length == 0) {
+                alert("请上传证件信息!");
+                return false
+            } else if ($("#uploaded-list tbody").children().length < 3) {
+                alert("请上传齐身份证件照（正反面）及一寸证照（共3个）")
+                return false
+            }
+
+            if (!$("input[name='contract_agreed']").prop("checked")) {
+                alert("请勾选合同同意框!")
+                return false
+            }
+            //return false;
+        }
+
+
+        function DeleteFileOnServer(filename,ele) {
+
+        var csrftoken = $("input[name='csrfmiddlewaretoken']").val();
+
+        $.ajax({
+            url:"{% url 'enrollment_delete' enrollment_obj.id %}",
+            type:"POST",
+            data:{"filename":filename,'csrfmiddlewaretoken':csrftoken},
+            success:function (callback) {
+                var response = JSON.parse(callback);
+                if (response.msg ) {
+                    {#console.log("response.msg.");#}
+                    $(ele).parent().parent().remove();
+                    //后台文件删除，Dropzone中file也应该删除,循环Dropzone中的所有文件
+                    $.each(myDropzone.files, function (index, file_obj) {
+                        //file_obj: myDropzone中的文件
+                        if (file_obj.name == filename.trim()) {
+                            myDropzone.removeFile(file_obj);
+                        }
+                    })
+                }
+            }
+
+        })
+
+    }
+
+
+    </script>
+{% endblock %}
+
+{% block extra-js %}
+    <script src="/static/plugins/dropzone/dropzone.js"></script>
+
+
+    <script>
+
+    $(document).ready(function () {
+
+        Dropzone.options.filedropzone = {
+          url:"{% url 'enrollment_fileupload' enrollment_obj.id %}",
+          dictDefaultMessage: "点击或拖拽文件上传 | 文件格式：‘.zip’ or ‘.rar’",
+          dictFileTooBig: "文件过大，必须 <= 1M",
+          dictRemoveFile: "remove file",
+          addRemoveLinks: true,
+          maxFilesize: 1, // MB,
+          maxFiles:3,
+          paramName:"file",
+          {#uploadMultiple:true,#}
+          acceptedFiles: '.jpg,.jpeg,.png'
+
+        };
+
+
+        Dropzone.autoDiscover = false;
+        // or disable for specific dropzone:
+        // Dropzone.options.myDropzone = false;
+        myDropzone = new Dropzone("#filedropzone");
+        myDropzone.on("success", function(file,response) {
+            /* Maybe display some more file information on your page */
+            //console.log("file11:",file)
+            var response_dic = JSON.parse(response);
+
+            if (response_dic.error) {
+                //后台返回错误信息
+                alert(response_dic.error)
+
+            } else {
+                var eles = '';
+                $.each(response_dic.file, function (k, v) {
+                    console.log(k + v); // k: file_name , v: file_info.size 、 file_info.ctime
+                    //var onclick_attr = 'onclick="DeleteFileOnServer(' + "'" + k  + "',this)'";
+
+                    eles += "<tr><td>" + k + "</td><td>" + v.size + "</td><td>" + v.ctime + "</td><td><i style='color:red;cursor: pointer' class='fa fa-times' aria-hidden='true' onclick='DeleteFileOnServer(\" " + k + " \",this)'>X</i></td></tr>";
+                });//end each
+
+                $("#uploaded-list tbody").html(eles);
+            }
+          });
+    });//end doc ready
+
+    /*
+        Dropzone.options.myAwesomeDropzone = false;
+
+        $("#myAwesomeDropzone").dropzone({
+            url: "handle-upload.php",
+            dictDefaultMessage: "点击或拖拽文件至此，可添加文件",
+            dictInvalidInputType:"必须是'.txt'结尾的文件",
+            dictFileTooBig: "文件过大，必须 <= 3M",
+            dictRemoveFile: "remove file",
+            addRemoveLinks: true,
+            dictRemoveLinks: "x",
+            dictCancelUpload: "x",
+            maxFiles: 3,
+            maxFilesize: 1,
+            acceptedFiles: '.jpg,.jpeg,.png',
+            init: function () {
+
+                this.on("success", function (file, response) {
+                    var response = JSON.parse(response);
+                });
+            }
+        });
+*/
+    </script>
+
+{% endblock %}
+

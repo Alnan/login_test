@@ -1,0 +1,232 @@
+{% extends 'index.html' %}
+{% block extra-css %}
+    <link href="/static/plugins/dropzone/dropzone.css" rel="stylesheet">
+
+
+{% endblock %}
+
+{% block right-content-container %}
+
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading"><h4>{{ study_record_obj.course_record }} | {{ study_record_obj.student }}</h4></div>
+        <div class="panel-body">
+            <div class="form-horizontal">
+                <div class="form-group">
+                    <label class="col-lg-2 control-label col-sm-offset-0">作业标题:</label>
+                    <div class="col-sm-9">
+                        <input name="homework_title" disabled class="form-control"
+                               value="{{ study_record_obj.course_record.title }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label col-sm-offset-0">作业详情:</label>
+                    <div class="col-sm-9">
+                        <pre class="form-control">{{ study_record_obj.course_record.homework }}</pre>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label col-sm-offset-0">本节成绩:</label>
+                    <div class="col-sm-9">
+                        <input name="score" disabled class="form-control"
+                               value="{{ study_record_obj.score }}">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="col-lg-2 control-label col-sm-offset-0">老师评语:</label>
+                    <div class="col-sm-9">
+{#                        <input name="note" disabled class="form-control" value="{{ study_record_obj.note }}">#}
+                        <textarea disabled class="form-control">{{ study_record_obj.note }}</textarea>
+                    </div>
+                </div>
+
+
+            </div>
+            <hr>
+
+
+
+            <table id="uploaded-list" class="table table-striped">
+            <thead>
+            <tr>
+                <th>作业名称</th>
+                <th>大小(b)</th>
+                <th>上传时间</th>
+                <th>删除</th>
+            </tr>
+            </thead>
+            <tbody>
+                {% for file_name,file_info in file_dicts.file.items %}
+                    <!-- file_dicts: {'file': {'2.rar': {'size': 16808, 'ctime': '2018-07-16 13:59:55'}}}-->
+                    <tr>
+                        <td>{{ file_name }}</td>
+                        <td>{{ file_info.size }}</td>
+                        <td>{{ file_info.ctime }}</td>
+                        <td ><i style='color:red;cursor: pointer' class='fa fa-times' aria-hidden='true' onclick="DeleteFileOnServer('{{ file_name }}',this)">X</i></td>
+                    </tr>
+
+                {% endfor %}
+
+            </tbody>
+        </table>
+
+            <hr style="opacity: 0.3">
+
+            {# Dropzone插件，用于上传文件处理#}
+            <form id="filedropzone" action="{{ request.path }}" class="dropzone dz-clickable" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="fallback">
+                    <input name="file" type="file" multiple/>
+                </div>
+
+            </form>
+        <br>
+
+{#            <input type="submit" class="btn btn-success pull-right" value="提交" onclick="return BeforeFormSubmit(this);">#}
+
+
+        </div>
+    </div>
+
+
+
+    <script>
+
+    function DeleteFileOnServer(filename,ele) {
+
+        var csrftoken = $("input[name='csrfmiddlewaretoken']").val();
+
+        $.ajax({
+            url:"{{ request.path }}delete/",
+            type:"POST",
+            data:{"filename":filename,'csrfmiddlewaretoken':csrftoken},
+            success:function (callback) {
+                var response = JSON.parse(callback);
+                if (response.msg ) {
+                    //means file got removed
+                    console.log("response.msg.");
+                    $(ele).parent().parent().remove();
+
+                    //后台文件删除，Dropzone中file也应该删除,循环Dropzone中的所有文件
+                    $.each(myDropzone.files, function (index, file_obj) {
+                        //file_obj:myDropzone中的文件
+                        if (file_obj.name == filename.trim()) {
+                            //console.log("remove it from dropzone as well" + filename);
+                            myDropzone.removeFile(file_obj);
+
+                        }
+                    })
+                }
+            }
+
+        })
+
+    }
+       /* function BeforeFormSubmit(ele) {
+
+            if ($("#uploaded_files").children().length == 0) {
+                alert("请上传您的作业!");
+                return false
+
+            }
+        }*/
+
+    </script>
+
+
+{% endblock %}
+
+{% block extra-js %}
+
+<script src="/static/plugins/dropzone/dropzone.js"></script>
+
+<script>
+
+    $(document).ready(function () {
+
+        Dropzone.options.filedropzone = {
+          url:"{{ request.path }}",
+         // paramName: "file", // The name that will be used to transfer the file
+          dictDefaultMessage: "点击或拖拽文件上传 | 文件格式：‘.zip’ or ‘.rar’",
+          dictFileTooBig: "文件过大，必须 <= 6M",
+          dictRemoveFile: "remove file",
+          addRemoveLinks: true,
+          maxFilesize: 6, // MB,
+          maxFiles:1,
+          acceptedFiles: '.zip,.rar'
+
+        };
+
+
+        Dropzone.autoDiscover = false;
+        // or disable for specific dropzone:
+        // Dropzone.options.myDropzone = false;
+        myDropzone = new Dropzone("#filedropzone");
+        myDropzone.on("success", function(file,response) {
+            /* Maybe display some more file information on your page */
+           // console.log('filex upload done...',response);
+
+            var response_dic = JSON.parse(response);
+
+            if (response_dic.error){
+                console.log("error happpend...")
+
+            }else {
+                //alert(response_dic);
+                var eles = '';
+                $.each(response_dic.file,function (k,v) {
+                    console.log(k +v ); // k: file_name , v: file_info.size 、 file_info.ctime
+                    //console.log(response_dic.file );
+                    //var onclick_attr = 'onclick="DeleteFileOnServer(' + "'" + k  + "',this)'";
+
+                    eles += "<tr><td>" + k +"</td><td>" + v.size + "</td><td>" + v.ctime +"</td><td><i style='color:red;cursor: pointer' class='fa fa-times' aria-hidden='true' onclick='DeleteFileOnServer(\" "+ k +" \",this)'>X</i></td></tr>";
+
+
+                });//end each
+                $("#uploaded-list tbody").html(eles);
+            }
+
+
+          });
+    });//end doc ready
+
+/*
+    Dropzone.options.myAwesomeDropzone = false;
+
+    $("#myAwesomeDropzone").dropzone({
+        {#url: "handle-upload.php",#}
+        dictDefaultMessage: "点击或拖拽文件至此，可添加文件",
+        {#dictInvalidInputType:"必须是'.txt'结尾的文件",#}
+        dictFileTooBig: "文件过大，必须 <= 10M",
+        dictRemoveFile: "remove file",
+        addRemoveLinks: true,
+        {#dictRemoveLinks: "x",#}
+        dictCancelUpload: "remove file",
+        maxFiles: 1,
+        maxFilesize: 10, //M
+        acceptedFiles: '.zip,.rar',
+        init: function () {
+
+            this.on("success", function (file, response) {
+                var response = JSON.parse(response);
+                if (!response.status) {
+                    alert(response.err_msg);
+                }
+
+
+
+            })
+
+        }
+    });
+*/
+
+</script>
+
+
+
+
+{% endblock %}

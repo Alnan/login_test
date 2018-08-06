@@ -1,0 +1,20 @@
+{% extends "index.html" %}
+
+{% block right-content-container %}
+
+    <h3 class="page-header">删除{{ study_record_obj.student }} | {{ study_record_obj.course_record }}的学习记录</h3>
+
+
+    <h4 class="page-header" style="color: red">是否确定 删除{{ study_record_obj.course_record }}课 关于{{ study_record_obj.student }}的单条学习记录？</h4>
+    <h5 style="color: red;margin-left: 38px">温馨提醒：删除学员学习记录，建议以批量形式，不建议以单条形式删除</h5>
+    <br>
+
+<form method="post">{% csrf_token %}
+
+        <input class="btn btn-danger col-lg-offset-1" type="submit" value="确认删除">
+        <a href="/crm/teachers/study_record/{{ study_record_obj.id }}/change/" class="btn btn-info col-lg-offset-0">返回</a>
+
+    </form>
+
+
+{% endblock %}
